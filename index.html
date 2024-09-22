@@ -20,9 +20,21 @@
             font-size: 4rem;
             margin-top: 20px;
         }
+        .output-box {
+            width: 100%;
+            max-width: 400px;
+            height: 100px;
+            margin-top: 20px;
+            padding: 10px;
+            border: 2px solid #ccc;
+            background-color: #fff;
+            font-size: 1.2rem;
+            overflow-y: scroll;
+        }
         button {
             padding: 10px 20px;
             font-size: 1.5rem;
+            margin: 10px;
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -31,13 +43,21 @@
         button:hover {
             background-color: #45a049;
         }
+        #stop-btn {
+            background-color: #f44336;
+        }
+        #stop-btn:hover {
+            background-color: #e53935;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Tally for "Tuk"</h1>
         <button id="start-btn">Start Listening</button>
+        <button id="stop-btn" disabled>Stop Listening</button>
         <div class="tally" id="tally">Tally: 0</div>
+        <div class="output-box" id="output-box">Recognized text will appear here...</div>
     </div>
 
     <script src="app.js"></script>
