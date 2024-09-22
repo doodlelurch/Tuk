@@ -1,6 +1,8 @@
 let tallyCount = 0;
 const tallyDisplay = document.getElementById('tally');
 const startButton = document.getElementById('start-btn');
+const stopButton = document.getElementById('stop-btn');
+const outputBox = document.getElementById('output-box');
 
 // Check if the browser supports speech recognition
 window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -15,6 +17,7 @@ if ('SpeechRecognition' in window) {
         const transcript = event.results[event.resultIndex][0].transcript.trim().toLowerCase();
         
         console.log('Heard: ', transcript);  // Log what the app hears
+        outputBox.textContent = `Heard: ${transcript}`;  // Display in output box
 
         // Words or phrases to match
         const wordsToMatch = ['tuk', 'tuk tuk', 'took', 'tuck'];
@@ -30,16 +33,25 @@ if ('SpeechRecognition' in window) {
         console.error('Speech recognition error', event.error);
     };
 
-    // Start listening when the button is clicked
+    // Start listening when the "Start Listening" button is clicked
     startButton.addEventListener('click', () => {
         try {
             recognition.start();
-            startButton.textContent = "Listening...";
             startButton.disabled = true;
+            stopButton.disabled = false;
+            startButton.textContent = "Listening...";
         } catch (error) {
             console.error('Error starting speech recognition:', error);
             alert('Failed to start speech recognition. Please try a different browser.');
         }
+    });
+
+    // Stop listening when the "Stop Listening" button is clicked
+    stopButton.addEventListener('click', () => {
+        recognition.stop();
+        startButton.disabled = false;
+        stopButton.disabled = true;
+        startButton.textContent = "Start Listening";
     });
 
 } else {
