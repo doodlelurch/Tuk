@@ -7,15 +7,17 @@ const outputBox = document.getElementById('output-box');
 // Initialize variables for recording
 let mediaRecorder;
 let audioChunks = [];
+let intervalId;
+let isRecording = false;
 
 // AssemblyAI API key
 const API_KEY = '430f22c13c6b401e965a12c7ff520023';  // Replace with your AssemblyAI API key
 
-// Start recording audio
+// Start recording audio and process chunks continuously
 startButton.addEventListener('click', async () => {
-    audioChunks = [];
     startButton.disabled = true;
     stopButton.disabled = false;
+    outputBox.textContent = 'Listening...';
 
     // Request access to the microphone
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -26,18 +28,30 @@ startButton.addEventListener('click', async () => {
         audioChunks.push(event.data);
     };
 
-    stopButton.addEventListener('click', async () => {
-        mediaRecorder.stop();
-        startButton.disabled = false;
-        stopButton.disabled = true;
+    isRecording = true;
 
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioBase64 = await blobToBase64(audioBlob);
+    // Process audio chunks every 2 seconds
+    intervalId = setInterval(async () => {
+        if (audioChunks.length > 0 && isRecording) {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const audioBase64 = await blobToBase64(audioBlob);
+            audioChunks = [];  // Clear the chunks for the next interval
 
-        // Send the audio to AssemblyAI for transcription
-        const transcript = await sendToAssemblyAI(audioBase64);
-        handleTranscript(transcript);
-    });
+            // Send audio chunk to AssemblyAI
+            const transcript = await sendToAssemblyAI(audioBase64);
+            handleTranscript(transcript);
+        }
+    }, 2000);
+});
+
+// Stop the recording
+stopButton.addEventListener('click', () => {
+    startButton.disabled = false;
+    stopButton.disabled = true;
+
+    isRecording = false;
+    clearInterval(intervalId);
+    mediaRecorder.stop();
 });
 
 // Function to convert Blob to base64
@@ -100,8 +114,12 @@ function handleTranscript(transcript) {
     
     const wordsToMatch = ['tuk', 'tuk tuk', 'took', 'tuck'];
     
-    if (wordsToMatch.some(word => transcript.toLowerCase().includes(word))) {
-        tallyCount++;
+    const foundMatches = wordsToMatch.reduce((count, word) => {
+        return count + (transcript.toLowerCase().split(word).length - 1);
+    }, 0);
+
+    if (foundMatches > 0) {
+        tallyCount += foundMatches;
         tallyDisplay.textContent = `Tally: ${tallyCount}`;
     }
 }
